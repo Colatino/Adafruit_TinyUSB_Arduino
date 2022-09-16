@@ -32,7 +32,6 @@
 #endif
 
 #include "common/tusb_common.h"
-#include "hcd.h"
 
 //--------------------------------------------------------------------+
 // MACRO CONSTANT TYPEDEF
@@ -79,7 +78,11 @@ enum
 // APPLICATION CALLBACK
 //--------------------------------------------------------------------+
 
-//TU_ATTR_WEAK uint8_t tuh_attach_cb (tusb_desc_device_t const *desc_device);
+// Give the application an opportunity to grab the device descriptor
+TU_ATTR_WEAK void tuh_desc_device_cb(uint8_t daddr, const tusb_desc_device_t *desc_device);
+
+// Give the application an opportunity to grab the configuration descriptor
+TU_ATTR_WEAK void tuh_desc_config_cb(uint8_t daddr, const tusb_desc_configuration_t *desc_config);
 
 // Invoked when device is mounted (configured)
 TU_ATTR_WEAK void tuh_mount_cb (uint8_t daddr);
@@ -115,8 +118,11 @@ void tuh_task(void)
   tuh_task_ext(UINT32_MAX, false);
 }
 
-// Interrupt handler, name alias to HCD
+#ifndef _TUSB_HCD_H_
 extern void hcd_int_handler(uint8_t rhport);
+#endif
+
+// Interrupt handler, name alias to HCD
 #define tuh_int_handler   hcd_int_handler
 
 bool tuh_vid_pid_get(uint8_t daddr, uint16_t* vid, uint16_t* pid);
